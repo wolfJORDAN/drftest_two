@@ -1,0 +1,192 @@
+Bueno, primeor que nada a configurar el entorno virtual no, y luego instalar django, y django rest framework, para instalar este ultimo es asi;
+
+pip install djangorestframework,
+
+simplemente asi, luego vamos a crear un proyecto asi en la terminal:
+
+django-admin starproject simplecrud
+
+luego vamos a crear una aplicacion projects asi:
+
+python manage.py startapp project .
+
+el punto es para que la cree en el mismo directorio en el cual estamos
+
+y vamos a poner o incluir la aplicacion y el modulo de django rest framework en INSTALLED_APPS de sttings de la carpeta del proyecto que este caso es simplecrud
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'projects',<--------
+    'rest_framework'<-------
+]
+
+Models(Modelos)
+
+en la aplicacion projects en el modulo projects
+
+vamos a crear la sigueinte clase con los sigueintes campos
+
+from django.db import models
+
+# Create your models here.
+class Project(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    tecnology = models.CharField(max_length=200)
+    created_at = models.DateField(auto_now_add=True)
+
+y ejecutamos las migraciones con los siguientes comandos:
+
+python manage.py makemigrations
+python manage.py migrate
+----------------------------------------------------------------------
+ los "endpoints" son las URLs únicas que representan recursos específicos a los que los clientes pueden acceder y manipular mediante las operaciones HTTP estándar, como GET, POST, PUT, DELETE, entre otras.
+
+y luego creamos un modulo llamado serializers.py
+
+y escribimos lo sigueinte:
+
+from rest_framework import serializers
+
+"
+La línea de código from rest_framework import serializers importa un módulo llamado serializers proporcionado por Django REST framework (DRF). Esta acción permite utilizar y trabajar con las clases y funciones definidas dentro de este módulo.
+
+En el contexto de Django REST framework, los serializers son una parte fundamental para la serialización y deserialización de datos. Estos se utilizan para convertir objetos complejos de Python"
+
+------
+luego vamos a importar el modelo Project de models asi:
+from .models import Project y vamos a poner lo siguiente:
+
+class ProjectSerializer(serializers.ModelSerializer):
+
+#esto lo que va a hacer es convertir un modelo en datos que van a poder ser consultados
+
+ok, luego vamos a crear una clase Meta y lo siguiente:
+
+class Meta:
+        model = Project<---el nombre del modelo
+
+        fields = ('id', 'title', 'description', 'technology', 'created_at')<----estos van a ser los campos que queremos que sean consultados en una tupla
+
+        por defecto hay un id, entonces tenemos que colocarlo ahi tambien
+
+        read_only_fields = ('created_at', )<-que campos son de solo lectura, no se van a modificar, eliminar ni actualizar
+
+        ---------------------------------------------------quedaria asi:
+
+from rest_framework import serializers
+from .models import Project
+
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project  # Aquí se debe asignar el modelo Project sin los paréntesis
+        fields = ('id', 'title', 'description', 'tecnology', 'created_at')
+        read_only_fields = ('created_at', )#aqui si no le ponemos la coma lo va a tomar como string y no tupla, habria un error
+---------------------------------------------------------------------
+
+y luego creariamos lo que se conoce como un view set
+
+el view set nos permite establecer quien puede consultar lo anterior es decir, o si nosotros tenemos que hacer una autenticacion para accderlo
+
+
+bueno, luego en la carpeta de la aplicacion vamos a crear un modulo con el nombre de api.py
+
+y vamos a escribir lo sigueinte:
+
+from .models import Project
+
+from rest_framework import viewsets, permissions
+"""
+permissions contiene clases que definen las reglas de autorización que se aplican a las vistas en Django REST Framework. Estas reglas permiten controlar quién tiene acceso a qué recursos dentro de la API.
+"""
+
+from serializers import ProjectSerializer
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    #aqui le decimos que consultas se van a poder hacer
+    queryset = Project.object.all()#consulta todos los datos de una tabla
+    permission_classes = [permissions.AllowAny]
+    #los permisos son que solo de allowany, que cualquier cliente va a poder accder a los datos
+    serializer_class = ProjectSerializer 
+    #a partir de que serializer va a estar utilizando estos datos, como lo va aconvertir
+
+y bueno, con esto ya tenemos una API creada 
+
+---------------------------------------------------------------------------------------------
+ah, y bueno, ahora tenemos que incluir las urls para que puedan consultarlas,
+podemos hacer lo basico con un urlpatterns desde cero, pero no hay necesidad,
+ya que rest framework nos proporciona un modulo especial que nos va a dar todas las rutas basicas para el CRUD, eso lo
+
+ hacemos en urls de la aplicacion en este caso, el que tenemos que crear nosotros en Project
+
+from rest_framework import routers
+
+from rest_framework import routers
+"""
+from rest_framework import routers: Esta línea importa el módulo routers de Django REST Framework, que proporciona herramientas para crear enrutadores de API.
+"""
+
+from .api import ProjectViewSet
+
+"""
+from .api import ProjectViewSet: Aquí se importa el ProjectViewSet desde un archivo llamado api que está en el mismo directorio que este código. El ProjectViewSet probablemente sea una clase que contiene lógica para manejar las solicitudes HTTP relacionadas con un modelo de proyectos en tu aplicación.
+"""
+
+
+router = routers.DefaultRouter()
+"""
+router = routers.DefaultRouter(): Esta línea inicializa un enrutador utilizando la clase DefaultRouter proporcionada por Django REST Framework. Este enrutador ayudará a manejar las rutas y vistas para tus APIs.
+"""
+
+router.regiter('api/projects', ProjectViewSet, 'projects')
+"""
+router.register('api/projects', ProjectViewSet, 'projects'): Esta línea registra el ProjectViewSet en el enrutador.
+"""
+
+ahora ok, igual tenemos que poner un urlpatterns pero no de la manera que conociamos inicialemente, lo harmemos asi:
+
+urlpatterns = router.urls, am se supone que va a funcionar pero aun tenemos que incluirlo en urls del proyecto principal con include
+--------------------------------------------------------------------------------------------------------------------------
+Bien ahora lo que vamos a hacer es desplegarlo no, en un sefvico que se llama render ya que es gratis por un lapso y no
+queremos complicarnos.
+
+primero tenemos que hacer un directorio de git en el proyecto, en la terminal vamos a correr: git init,
+y luego creamos un archivo .gitignore en la carpeta que contiene todo, porque no queremos que todo se suba xd
+
+bueno, en ese archivo escribimos: db.sqlite3, tambien a la carpeta venvn, y tambien a los archivos que dicen __pycache__, asi:
+
+db.sqlite3
+venv
+__pycache__
+
+luego vamo a correr en la terminal git add .
+para seleccionar todo eso
+
+y luego corremos otro el cual es:
+
+git comit -m "first comit"
+
+con eso ya tenemos un repositorio pero todavia no esta configurado para subirlo a render
+
+entonces, hay documentacion de render que nos dice como hacerlo
+
+solo buscamos deploy django render.com 
+
+y nos dira que hacer, no lo pongo aqui porque se hace pinche largo el documentacion
+--
+luego creamos la base de datos en postgresql ahi en la misma pagina pero en dasboard
+
+luego de que ya haya creado el servidor nos va a dar una url
+
+luego de que ya se haya crado vamos a instalar dos modulos en simplecrud 
+
+pip install dj-database-url psycopg2-binary
+
+y luego de que ya este instalado lo vamos a poder importar en nuestro modulo de settings tambien
+
+import dj_database_url
