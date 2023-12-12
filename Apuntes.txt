@@ -185,8 +185,119 @@ luego de que ya haya creado el servidor nos va a dar una url
 
 luego de que ya se haya crado vamos a instalar dos modulos en simplecrud 
 
-pip install dj-database-url psycopg2-binary
+pip install dj-database-url psycopg2-binary,
+
+dj-database-url = lo que hace este modulo es comprobar si existe una varibale de entorno llamada
+database_url
+
+y este psycopg2-binary, para poder conectarnos a postgresql
+
+
 
 y luego de que ya este instalado lo vamos a poder importar en nuestro modulo de settings tambien
 
-import dj_database_url
+import dj_database_url, psycopg2
+------------------------------------------------------------------------------
+
+luego lo que nos dice la documentacion es que lo asignemos en databases en settings
+
+lo que hace databases es algo como esto: 
+
+#lo que hay lo vamos a borrar y poner esto :V
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',# lo que hace esto es concectarnos a la base
+        #de datos sqlite que tenemos aqui la base de datos es sqlite y el nombre de la bd es db.sqltie3
+
+        conn_max_age=600
+    )
+}
+si nosotros en el servidor una varibale llamada databse_url o algo asi, sino va a leer lo que contiene lo de arriba
+
+y si vamos a la documentacion de django y buscamos el modulo dj_databse_url, y nos proporciona los esquemas para la bd
+
+-------------------------------------------------------------------------------------------------------------------
+siguiendo con el tutorial de render siguen los statics files
+e instalamos esto asi : pip install whitenoise[brotli]
+
+lo siguiente que nos dice es que añade en sttings.py en la lista MIDELWARE
+
+este modulo: 'whitenoise.middleware.WhiteNoiseMiddleware'
+# es importante que valla despues de SecurityMiddleware fijo -_-
+
+y bueno, lo qure ahora dice es que va a genrear una url cuando estemos en desarrollo de una carptea statics pero eso viene por default, lo que nos interesa ahora es si no esta en debug entonces que haga lo siguiete, eso va en settings
+despues de la variable llamada STATIC_URL
+
+if not DEBUG:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+si no esta en desarrollo va a acceder a la varibale STATIC ROOT que tan solo va a crear una carpeta de staticfiles, pero eso con un comando de manage,
+
+y luego que va a usar whitenoise para servirnos
+--------------------------------------------------------------------------------------------------------------------------
+y luego lo que nos dice para no estar ejecutando acciones comando a comando crea un modulo y agregale esto:
+
+#!/usr/bin/env bash
+# exit on error
+set -o errexit
+
+poetry install
+
+python manage.py collectstatic --no-input
+python manage.py migrate
+-----------------------------------------------------
+lo unico que hace esto por mi es ejecutar comandos  *
+-----------------------------------------------------
+
+peeero, no vamos a usar poetry, vamos a usar pip, y tenemos que indicarle que modulos va a instalar 
+
+entonces en consola vamos a jeecutar el siguiente comando:
+pip freez > requirements.txt y ENTER
+--------------------------------------------------------------------------------------------------------------------------
+luego en el modulo de bash que creamos anterior mente lo que tiene que ir para instalar es lo siguiente:
+
+#!/usr/bin/env bash
+# exit on error
+set -o errexit
+
+pip install -r requirements.txt
+
+python manage.py collectstatic --no-input
+python manage.py migrate
+--------------------------------------------------------------------------------------------------------------------------
+y bueno lo siguiente que nos dice es que corramos el sigueinte comnando en la terminal pero de linux, si estamos con powershell la cambiamos a git bash es lo mas probable dsi tenemos git instalado 
+
+chmod a+x build.sh 
+
+damos enter ya ese archivo lo tendriamos como ejecutable, con esos permisos 
+
+y lo ultimo que vamos a instalar va a ser gunicorn asi: pip install gunicorn
+
+y corremos ahora pip freeze > requirements.txt 
+y se tendria que aver actualizado con unicorn
+-------------------------------
+le hacemos un git status y luego un git add .
+y despues un git commit -m "ready for render.com", am luego entramos a nuestra cuenta de github y am...
+
+creamos un repositorio de github con el nombre que sea en la terminal corremos lo siguiente:
+
+ git remote add origin https://github.com/wolfJORDAN/drftest.git
+
+ luego:
+
+ git push -u origin main,
+ bueno en este caso la rama es master entonces en vez de main vamos a poner master
+
+ ok,tuvimos que correr set-url origin <nueva url par corregir no se que paso pero hicimos lo siguiente>
+
+ git remote add origin https://github.com/wolfJORDAN/drftest.git
+  git branch -M main
+  git push -u origin main
+
+  eso corrimos xd
+
+ok, luego de eso el repo ya debe de estar en nuestra cuenta, luego en render hacemos lo sigueinte:
+
+quiero seleccionar mi cuenta y ese repositorio 
